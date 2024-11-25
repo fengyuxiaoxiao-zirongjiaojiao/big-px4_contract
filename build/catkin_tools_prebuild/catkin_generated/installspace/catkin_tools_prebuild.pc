@@ -1,0 +1,8 @@
+prefix=/home/hxj/px4_to_perception/px4_to_perception/install
+
+Name: catkin_tools_prebuild
+Description: Description of catkin_tools_prebuild
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/home/hxj/px4_to_perception/px4_to_perception/devel/.private/empty
+
+Name: empty
+Description: Description of empty
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

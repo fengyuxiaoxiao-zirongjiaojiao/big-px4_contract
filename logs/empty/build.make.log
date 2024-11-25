@@ -1,0 +1,4 @@
+[35m[1mScanning dependencies of target empty[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/empty.dir/src/empty.cpp.o[0m
+[100%] [32m[1mLinking CXX executable /home/hxj/px4_to_perception/px4_to_perception/devel/.private/empty/lib/empty/empty[0m
+[100%] Built target empty
