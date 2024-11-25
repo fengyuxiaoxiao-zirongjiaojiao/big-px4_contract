@@ -1,0 +1,11 @@
+
+<launch>
+
+	<node pkg="empty" type="empty" name="empty" output="screen">
+		<!-- <param name="resolution" value="0.05" /> -->
+		<!-- <param name="frame_id" type="string" value="odom_combined" /> -->
+		<!-- <param name="sensor_model/max_range" value="5.0" /> -->
+		<!-- <remap from="cloud_in" to="points" /> -->
+	</node>
+
+</launch>
