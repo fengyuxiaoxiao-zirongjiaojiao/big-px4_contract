@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   mavros_msgs
+  sensor_msgs
+  nav_msgs
+  tf2
 )
 
 catkin_package(
@@ -27,3 +30,6 @@ include_directories(
 
 add_executable(empty src/empty.cpp)
 target_link_libraries(empty ${catkin_LIBRARIES})
+
+add_executable(server src/server.cpp)
+add_executable(client src/client.cpp)
