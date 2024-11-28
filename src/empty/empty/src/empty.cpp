@@ -43,6 +43,11 @@ ros::Publisher pub_attitude, pub_setpoint_global;
 ros::Subscriber sub_state, sub_global, sub_gps1_raw, sub_local_odom, sub_imu_data;
 pthread_t socket_ntid_rev;
 
+static const int RECVLEN = 142;
+void mavlink_transform_big (udp_send &udp_send_data, unsigned char *buf);
+void big_transform_5_mavlink (mavros_msgs::GlobalPositionTarget &global_target, unsigned char *buf, int len);
+void UART8Proc(unsigned char* buf, int len, mavros_msgs::GlobalPositionTarget &global_target);
+
 struct udp_send
 {
     uint8_t fix_type;
@@ -93,7 +98,7 @@ int recv()
     }
 
     int recv_num;
-    char recv_buf[20];
+    unsigned char recv_buf[142];
     struct sockaddr_in addr_client;
 
     while (ros::ok())
@@ -113,20 +118,8 @@ int recv()
         printf("server receive %d bytes: %s\n", recv_num, recv_buf);
         // 接收到的udp消息赋值给ros自定义消息，发布给飞控
         mavros_msgs::GlobalPositionTarget global_target;
-        // 在此处给global_target赋值即可
-        // global_target.coordinate_frame=
-        // global_target.type_mask=
-        // global_target.latitude=
-        // global_target.longitude=
-        // global_target.altitude=
-        // global_target.velocity.x=
-        // global_target.velocity.y=
-        // global_target.velocity.z=
-        // global_target.acceleration_or_force.x=
-        // global_target.acceleration_or_force.y=
-        // global_target.acceleration_or_force.z=
-        // global_target.yaw=
-        // global_target.yaw_rate=
+        UART8Proc(recv_buf, recv_num, global_target);
+        
         pub_setpoint_global.publish(global_target);
     }
 
@@ -181,9 +174,10 @@ void send_udp()
         ros::spinOnce();
 
         int send_num;
-        char send_buf[20] = "hey, who are you?";
+        unsigned char send_buf[55] = "hey, who are you?";
         printf("client send: %s\n", send_buf);
         // 此处将udp_send_data赋值给send_buf即可
+        mavlink_transform_big(udp_send_data, send_buf);
         send_num =
             sendto(sock_fd, send_buf, strlen(send_buf), 0, (struct sockaddr*)&addr_serv, len);
         if (send_num < 0)
@@ -234,6 +228,169 @@ void imu_data_cb(const sensor_msgs::Imu::ConstPtr& msg)
     udp_send_data.angular_velocity_x = msg->angular_velocity.x;
     udp_send_data.angular_velocity_y = msg->angular_velocity.y;
     udp_send_data.angular_velocity_z = msg->angular_velocity.z;
+}
+
+//校验和  返回一个字节
+unsigned char Check(const unsigned char *buf, int len)  
+{  
+    int iSum = 0; 
+        
+    for (int i = 0; i < len; i++)   
+    {  
+            iSum += buf[i];          
+    }  
+        iSum %= 0x100;   //也可以&0xff
+        
+    return (unsigned char)iSum;  
+
+} 
+
+//多字节转换为小端字节数组
+void double_convert_to_little_endian(double value, uint8_t *bytes, uint8_t id) {
+    if (!bytes) return; // 确保目标数组非空
+
+    for (int i = 0; i < 8; i++) {
+        bytes[id + i] = (value >> (i * 8)) & 0xFF;
+    }
+}
+
+void short_convert_to_little_endian(short int value, uint8_t *bytes, uint8_t id) {
+    if (!bytes) return; // 确保目标数组非空
+
+    for (int i = 0; i < 2; i++) {
+        bytes[id + i] = (value >> (i * 8)) & 0xFF;
+    }
+}
+
+void unsigned_short_convert_to_little_endian(unsigned short int value, uint8_t *bytes, uint8_t id) {
+    if (!bytes) return; // 确保目标数组非空
+
+    for (int i = 0; i < 2; i++) {
+        bytes[id + i] = (value >> (i * 8)) & 0xFF;
+    }
+}
+
+void unsigned_int64_convert_to_little_endian(uint64_t value, uint8_t *bytes, uint8_t id) {
+    if (!bytes) return; // 确保目标数组非空
+
+    for (int i = 0; i < 2; i++) {
+        bytes[id + i] = (value >> (i * 8)) & 0xFF;
+    }
+}
+
+
+void mavlink_transform_big (udp_send &udp_send_data, unsigned char *buf) 
+{
+    buf[0] = 0xEF;
+    buf[1] = 0xFE;
+    buf[2] = 0x31;
+    buf[3] = 0x03;
+    buf[4] = udp_send_data.fix_type;
+    double_convert_to_little_endian((double)udp_send_data.lon, buf, 5);
+    double_convert_to_little_endian((double)udp_send_data.lat, buf, 13);
+    double_convert_to_little_endian((double)udp_send_data.alt, buf, 21);
+    short_convert_to_little_endian((short int)(udp_send_data.vx * 100), buf, 29);
+    short_convert_to_little_endian((short int)(udp_send_data.vy * 100), buf, 31);
+    short_convert_to_little_endian((short int)(udp_send_data.vz * 100), buf, 33);
+    short_convert_to_little_endian((short int)(udp_send_data.ax * 1000), buf, 35);
+    short_convert_to_little_endian((short int)(udp_send_data.ay * 1000), buf, 37);
+    short_convert_to_little_endian((short int)(udp_send_data.az * 1000), buf, 39);
+    short_convert_to_little_endian((short int)(udp_send_data.roll_body * 100), buf, 41);
+    short_convert_to_little_endian((short int)(udp_send_data.pitch_body * 100), buf, 43);
+    unsigned_short_convert_to_little_endian((unsigned short int)(udp_send_data.yaw_body * 100), buf, 45);
+    short_convert_to_little_endian((unsigned short int)(udp_send_data.angular_velocity_x * 100), buf, 47);
+    short_convert_to_little_endian((unsigned short int)(udp_send_data.angular_velocity_y * 100), buf, 49);
+    short_convert_to_little_endian((unsigned short int)(udp_send_data.angular_velocity_z * 100), buf, 51);
+    buf[53] = Check(&buf[2], 51);
+    buf[54] = 0xA4;
+    buf[55] = 0x45;
+}
+
+void big_transform_5_mavlink (mavros_msgs::GlobalPositionTarget &global_target, unsigned char *buf, int len) 
+{
+    if (buf[139] == Check(&buf[2], 137)) {
+        // 在此处给global_target赋值即可
+        global_target.coordinate_frame = mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_INT;
+        global_target.type_mask = 0; //不忽略每一个参数
+        global_target.latitude = buf[16] + (buf[17] << 8) + (buf[18] << 16) + (buf[19] << 24) + (buf[20] << 32) + (buf[21] << 40) + (buf[22] << 48) + (buf[23] << 56);
+        global_target.longitude = buf[24] + (buf[25] << 8) + (buf[26] << 16) + (buf[27] << 24) + (buf[28] << 32) + (buf[29] << 40) + (buf[30] << 48) + (buf[31] << 56);
+        global_target.altitude = buf[32] + (buf[33] << 8) + (buf[34] << 16) + (buf[35] << 24) + (buf[36] << 32) + (buf[37] << 40) + (buf[38] << 48) + (buf[39] << 56);
+        global_target.velocity.x = (double)(buf[40] + (buf[41] << 8)) / 100 ;
+        global_target.velocity.y = (double)(buf[42] + (buf[43] << 8)) / 100 ;
+        global_target.velocity.z = (double)(buf[44] + (buf[45] << 8)) / 100 ;
+        global_target.acceleration_or_force.x = (double)(buf[46] + (buf[47] << 8)) / 1000 ;
+        global_target.acceleration_or_force.y = (double)(buf[48] + (buf[49] << 8)) / 1000 ;
+        global_target.acceleration_or_force.z = (double)(buf[50] + (buf[51] << 8)) / 1000 ;
+        global_target.yaw = (float)(buf[53] + (buf[54] << 8)) / 100 ;
+        global_target.yaw_rate = (float)(buf[55] + (buf[56] << 8)) / 100 ;
+    }
+}
+
+// void big_transform_6_mavlink (mavros_msgs::GlobalPositionTarget &global_target, unsigned char *buf, int len) 
+// {
+// }
+
+
+// 寻找帧
+void UART8Proc(unsigned char* buf, int len, mavros_msgs::GlobalPositionTarget &global_target)
+{
+	static int index = 0;
+	static unsigned char recvbuff[RECVLEN*2];
+    static unsigned char contract_flag = 0;
+	
+	for(int i=0; i<len; i++)
+	{
+		recvbuff[index] = buf[i];
+		
+		switch(index)
+		{
+			case 0:
+				if(recvbuff[index] == 0xEF) index++;
+				else index = 0;		
+			break;
+
+            case 1:
+				if(recvbuff[index] == 0xFE) index++;
+				else index = 0;		
+			break;
+
+            case 2:
+				if(recvbuff[index] == 0x91) {
+                    index++;
+                    contract_flag = 5;
+                } else if(recvbuff[index] == 0x16) {
+                    index++;
+                    contract_flag = 6;
+                } else index = 0;		
+			break;
+
+            case 4:
+				if(recvbuff[index] == 0x01 && contract_flag == 5) index++;
+				else if(recvbuff[index] == 0x02 && contract_flag == 6) index++;
+                else index = 0;		
+			break;
+
+            case 21:
+				if(recvbuff[index - 1] == 0xA4 && recvbuff[index] == 0x45 && contract_flag == 6) {
+                    index = 0;
+					// big_transform_6_mavlink(global_target, recvbuff, index);
+                }
+				else index++;
+			break;
+			
+			default:
+				if(index >= RECVLEN - 1)    
+				{
+                    if(recvbuff[index - 1] == 0xA4 && recvbuff[index] == 0x45 && contract_flag == 5) {
+                        big_transform_5_mavlink(global_target, recvbuff, index);
+                    }
+					index = 0;					
+				}
+				else
+					index++;
+			break;					
+		}	
+	}
 }
 /**
  * @description:
