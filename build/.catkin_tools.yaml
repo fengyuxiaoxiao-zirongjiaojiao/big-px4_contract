@@ -1,6 +1,6 @@
-devel_space: /home/hxj/px4_to_perception/px4_to_perception/devel
+devel_space: /home/hxj/px4_to_perception/big-px4_contract/devel
 install: false
-install_space: /home/hxj/px4_to_perception/px4_to_perception/install
+install_space: /home/hxj/px4_to_perception/big-px4_contract/install
 profile: default
-source_space: /home/hxj/px4_to_perception/px4_to_perception/src
-workspace: /home/hxj/px4_to_perception/px4_to_perception
+source_space: /home/hxj/px4_to_perception/big-px4_contract/src
+workspace: /home/hxj/px4_to_perception/big-px4_contract

@@ -1,4 +1,3 @@
-Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/./cmake.lock
 Could not create symlink `/home/hxj/px4_to_perception/big-px4_contract/devel/./cmake.lock` referencing `/home/hxj/px4_to_perception/big-px4_contract/devel/.private/catkin_tools_prebuild/cmake.lock`
 Traceback (most recent call last):
   File "/usr/lib/python3/dist-packages/catkin_tools/execution/stages.py", line 177, in function_proxy
