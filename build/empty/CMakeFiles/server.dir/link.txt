@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/server.dir/src/server.cpp.o  -o /home/hxj/px4_to_perception/big-px4_contract/devel/.private/empty/lib/empty/server 

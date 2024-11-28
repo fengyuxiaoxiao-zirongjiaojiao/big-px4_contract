@@ -1,4 +1,6 @@
-Symlinking /home/hxj/px4_to_perception/px4_to_perception/devel/lib/empty/empty
-Symlinking /home/hxj/px4_to_perception/px4_to_perception/devel/lib/pkgconfig/empty.pc
-Symlinking /home/hxj/px4_to_perception/px4_to_perception/devel/share/empty/cmake/emptyConfig-version.cmake
-Symlinking /home/hxj/px4_to_perception/px4_to_perception/devel/share/empty/cmake/emptyConfig.cmake
+Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/lib/empty/client
+Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/lib/empty/empty
+Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/lib/empty/server
+Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/lib/pkgconfig/empty.pc
+Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/share/empty/cmake/emptyConfig-version.cmake
+Symlinking /home/hxj/px4_to_perception/big-px4_contract/devel/share/empty/cmake/emptyConfig.cmake

@@ -1,1 +1,1 @@
-/home/hxj/px4_to_perception/px4_to_perception/devel/.private/catkin_tools_prebuild/setup.sh
+/home/hxj/px4_to_perception/big-px4_contract/devel/.private/catkin_tools_prebuild/setup.sh

@@ -1,8 +1,0 @@
-prefix=/home/hxj/px4_to_perception/px4_to_perception/devel/.private/libmavconn
-
-Name: libmavconn
-Description: Description of libmavconn
-Version: 1.18.0
-Cflags: -I/home/hxj/px4_to_perception/px4_to_perception/src/mavros/libmavconn/include -I/usr/include -I/home/hxj/px4_to_perception/px4_to_perception/devel/include
-Libs: -L${prefix}/lib -lmavconn /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0 /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4
-Requires: 

@@ -1,8 +1,0 @@
-prefix=/home/hxj/px4_to_perception/px4_to_perception/devel
-exec_prefix=/home/hxj/px4_to_perception/px4_to_perception/devel
-includedir=${prefix}/include
-
-Name: mavlink
-Description: MAVLink micro air vehicle marshalling / communication library
-Version: 2024.3.3
-Cflags: -I${includedir}
